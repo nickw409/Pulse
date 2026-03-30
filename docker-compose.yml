@@ -28,5 +28,30 @@ services:
       - "8081:8081"
       - "8082:8082"
 
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on: [postgres, redis]
+    env_file: .env
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: apps/ingestion/Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on: [redpanda]
+    env_file: .env
+
+  consumer:
+    build:
+      context: .
+      dockerfile: packages/consumer/Dockerfile
+    depends_on: [redpanda, postgres, redis]
+    env_file: .env
+
 volumes:
   pg_data:

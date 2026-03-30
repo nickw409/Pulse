@@ -5,9 +5,11 @@ import { trpc } from "@/lib/trpc/client";
 import { FieldBuilder, type SchemaField } from "./field-builder";
 
 export function SchemaEditor({ projectId }: { projectId: string }) {
-  const { data: schemas, isLoading, refetch } = trpc.schema.list.useQuery({
-    projectId,
-  });
+  const schemasQuery = trpc.schema.list.useQuery({ projectId });
+  type Schema = { id: string; name: string; version: number; fields: unknown; projectId: string };
+  const schemas: Schema[] | undefined = schemasQuery.data as any;
+  const isLoading = schemasQuery.isLoading;
+  const refetch = schemasQuery.refetch;
 
   const createMutation = trpc.schema.create.useMutation({
     onSuccess: () => {

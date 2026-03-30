@@ -9,14 +9,75 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
     runs-on: ubuntu-latest
-    needs: []  # TODO: add ci job dependency once ready
+    needs: [ci]
     if: github.ref == 'refs/heads/main'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
 
     steps:
       - uses: actions/checkout@v4
 
-      # TODO: Phase 6 — Build Docker images, push to ECR, Terraform apply, update ECS
-      - name: Placeholder
-        run: echo "Deploy pipeline not yet configured"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push web image
+        run: |
+          docker build -f apps/web/Dockerfile -t $ECR_REGISTRY/pulse/web:${{ github.sha }} -t $ECR_REGISTRY/pulse/web:latest .
+          docker push $ECR_REGISTRY/pulse/web --all-tags
+
+      - name: Build and push ingestion image
+        run: |
+          docker build -f apps/ingestion/Dockerfile -t $ECR_REGISTRY/pulse/ingestion:${{ github.sha }} -t $ECR_REGISTRY/pulse/ingestion:latest .
+          docker push $ECR_REGISTRY/pulse/ingestion --all-tags
+
+      - name: Build and push consumer image
+        run: |
+          docker build -f packages/consumer/Dockerfile -t $ECR_REGISTRY/pulse/consumer:${{ github.sha }} -t $ECR_REGISTRY/pulse/consumer:latest .
+          docker push $ECR_REGISTRY/pulse/consumer --all-tags
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7"
+
+      - name: Terraform Init
+        working-directory: infra/terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: infra/terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="web_image=$ECR_REGISTRY/pulse/web:${{ github.sha }}" \
+            -var="ingestion_image=$ECR_REGISTRY/pulse/ingestion:${{ github.sha }}" \
+            -var="consumer_image=$ECR_REGISTRY/pulse/consumer:${{ github.sha }}" \
+            -var="db_password=${{ secrets.DB_PASSWORD }}" \
+            -var="clerk_publishable_key=${{ secrets.CLERK_PUBLISHABLE_KEY }}" \
+            -var="clerk_secret_key=${{ secrets.CLERK_SECRET_KEY }}"
+
+      - name: Update ECS services
+        run: |
+          aws ecs update-service --cluster pulse-cluster --service pulse-web --force-new-deployment --region $AWS_REGION
+          aws ecs update-service --cluster pulse-cluster --service pulse-ingestion --force-new-deployment --region $AWS_REGION
+          aws ecs update-service --cluster pulse-cluster --service pulse-consumer --force-new-deployment --region $AWS_REGION
+
+      - name: Wait for services stable
+        run: |
+          aws ecs wait services-stable --cluster pulse-cluster --services pulse-web pulse-ingestion pulse-consumer --region $AWS_REGION
