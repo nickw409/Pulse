@@ -8,15 +8,15 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "type-check": "tsc --noEmit",
-    "test": "jest",
+    "test": "vitest run",
     "lint": "echo 'no linter configured yet'",
     "db:generate": "prisma generate --schema=../../apps/web/prisma/schema.prisma"
   },
   "dependencies": {
-    "@pulse/shared": "*",
-    "kafkajs": "^2.2.0",
     "@prisma/client": "^6.5.0",
-    "ioredis": "^5.4.0"
+    "@pulse/shared": "*",
+    "ioredis": "^5.4.0",
+    "kafkajs": "^2.2.0"
   },
   "devDependencies": {
     "@pulse/tsconfig": "*",
@@ -24,6 +24,7 @@
     "jest": "^29.7.0",
     "ts-jest": "^29.2.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.9"
   }
 }
