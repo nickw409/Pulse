@@ -1,0 +1,25 @@
+{
+  "name": "pulse",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "test": "turbo test",
+    "db:migrate": "npm run db:migrate --workspace=apps/web",
+    "db:generate": "npm run db:generate --workspace=apps/web",
+    "db:push": "npm run db:push --workspace=apps/web"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "npm@10.9.2"
+}
