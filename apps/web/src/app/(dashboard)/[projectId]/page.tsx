@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import { WidgetGrid } from "@/components/dashboard/widget-grid";
 import Link from "next/link";
 import { use } from "react";
 
@@ -13,6 +14,10 @@ export default function ProjectDashboardPage({
   const { data: project, isLoading } = trpc.project.getById.useQuery({
     id: projectId,
   });
+  const { data: summary } = trpc.events.summary.useQuery(
+    { projectId },
+    { enabled: !!project, refetchInterval: 30_000 },
+  );
 
   if (isLoading) {
     return (
@@ -46,17 +51,26 @@ export default function ProjectDashboardPage({
               {project.slug}
             </p>
           </div>
-          <Link
-            href={`/${projectId}/settings`}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
-          >
-            Settings
-          </Link>
+          <div className="flex items-center gap-4">
+            {summary && (
+              <div className="text-right">
+                <p className="text-lg font-semibold tabular-nums text-gray-900">
+                  {summary.totalToday.toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-400">events today</p>
+              </div>
+            )}
+            <Link
+              href={`/${projectId}/settings`}
+              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Settings
+            </Link>
+          </div>
         </div>
       </div>
-      <div className="rounded-lg border border-dashed border-gray-300 p-12 text-center text-sm text-gray-400">
-        Dashboard widgets coming in Phase 4
-      </div>
+
+      <WidgetGrid projectId={projectId} />
     </div>
   );
 }
