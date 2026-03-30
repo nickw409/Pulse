@@ -37,10 +37,22 @@ export default function ProjectDashboardPage({
         <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">
           ← Projects
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-gray-900">
-          {project.name}
-        </h1>
-        <p className="mt-1 text-xs text-gray-400 font-mono">{project.slug}</p>
+        <div className="flex items-center justify-between mt-2">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {project.name}
+            </h1>
+            <p className="mt-1 text-xs text-gray-400 font-mono">
+              {project.slug}
+            </p>
+          </div>
+          <Link
+            href={`/${projectId}/settings`}
+            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          >
+            Settings
+          </Link>
+        </div>
       </div>
       <div className="rounded-lg border border-dashed border-gray-300 p-12 text-center text-sm text-gray-400">
         Dashboard widgets coming in Phase 4
