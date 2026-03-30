@@ -4,6 +4,7 @@ import type { Widget } from "@/server/routers/dashboard";
 import { TimeSeries } from "@/components/charts/time-series";
 import { LiveCounter } from "@/components/charts/live-counter";
 import { EventFeed } from "@/components/charts/event-feed";
+import { BarBreakdown } from "@/components/charts/bar-breakdown";
 
 export function WidgetCard({
   widget,
@@ -54,9 +55,12 @@ export function WidgetCard({
           />
         )}
         {widget.type === "bar_breakdown" && (
-          <div className="flex items-center justify-center h-full text-xs text-gray-400">
-            Bar breakdown — Phase 5
-          </div>
+          <BarBreakdown
+            projectId={projectId}
+            eventName={widget.eventName}
+            groupBy={widget.groupBy}
+            title={widget.title}
+          />
         )}
       </div>
     </div>

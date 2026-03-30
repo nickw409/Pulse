@@ -9,6 +9,7 @@ const WIDGET_TYPES: { value: WidgetType; label: string }[] = [
   { value: "time_series", label: "Time Series" },
   { value: "counter", label: "Live Counter" },
   { value: "event_feed", label: "Event Feed" },
+  { value: "bar_breakdown", label: "Bar Breakdown" },
 ];
 
 export function AddWidgetModal({
@@ -23,6 +24,7 @@ export function AddWidgetModal({
   const [eventName, setEventName] = useState("");
   const [granularity, setGranularity] = useState<"1m" | "1h">("1m");
   const [counterWindow, setCounterWindow] = useState<"1h" | "24h">("1h");
+  const [groupBy, setGroupBy] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +34,8 @@ export function AddWidgetModal({
       onAdd({ type, eventName, granularity, title: trimmedTitle });
     } else if (type === "counter") {
       onAdd({ type, eventName, window: counterWindow, title: trimmedTitle });
+    } else if (type === "bar_breakdown") {
+      onAdd({ type, eventName, groupBy: groupBy || "type", title: trimmedTitle });
     } else if (type === "event_feed") {
       const names = eventName
         .split(",")
@@ -111,6 +115,22 @@ export function AddWidgetModal({
                 <option value="1m">1 minute</option>
                 <option value="1h">1 hour</option>
               </select>
+            </div>
+          )}
+
+          {type === "bar_breakdown" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Group by property
+              </label>
+              <input
+                type="text"
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value)}
+                placeholder="e.g. browser, country, plan"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                required
+              />
             </div>
           )}
 

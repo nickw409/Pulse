@@ -110,4 +110,51 @@ export const eventsRouter = router({
 
       return { buckets };
     }),
+
+  breakdown: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        eventName: z.string(),
+        groupBy: z.string(),
+        startTime: z.string().datetime(),
+        endTime: z.string().datetime(),
+        limit: z.number().min(1).max(50).default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const project = await ctx.db.project.findFirst({
+        where: { id: input.projectId, userId: ctx.user.id },
+      });
+      if (!project) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const events = await ctx.db.event.findMany({
+        where: {
+          projectId: input.projectId,
+          eventName: input.eventName,
+          timestamp: {
+            gte: new Date(input.startTime),
+            lte: new Date(input.endTime),
+          },
+        },
+        select: { properties: true },
+      });
+
+      // Group by the property key
+      const counts = new Map<string, number>();
+      for (const e of events) {
+        const props = e.properties as Record<string, unknown>;
+        const val = String(props[input.groupBy] ?? "unknown");
+        counts.set(val, (counts.get(val) ?? 0) + 1);
+      }
+
+      const groups = Array.from(counts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, input.limit)
+        .map(([value, count]) => ({ value, count }));
+
+      return { groups };
+    }),
 });

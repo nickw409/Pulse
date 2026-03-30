@@ -61,6 +61,18 @@ export default function ProjectDashboardPage({
               </div>
             )}
             <Link
+              href={`/${projectId}/history`}
+              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              History
+            </Link>
+            <Link
+              href={`/${projectId}/schemas`}
+              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Schemas
+            </Link>
+            <Link
               href={`/${projectId}/settings`}
               className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
             >

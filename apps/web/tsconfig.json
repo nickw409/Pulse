@@ -16,6 +16,7 @@
   ],
   "exclude": [
     "node_modules",
-    ".next"
+    ".next",
+    "src/**/*.test.ts"
   ]
 }
