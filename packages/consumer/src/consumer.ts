@@ -1,5 +1,9 @@
 import { Kafka, EachMessagePayload } from "kafkajs";
-import { RawEvent } from "@pulse/shared/events";
+import { rawEventSchema } from "@pulse/shared/validation";
+import { validateAgainstSchema } from "./schema-validator.js";
+import { addEvent } from "./pg-writer.js";
+import { updateCounters } from "./redis-updater.js";
+import { publishNewEvent } from "./sse-publisher.js";
 
 const kafka = new Kafka({
   clientId: "pulse-consumer",
@@ -11,10 +15,29 @@ const consumer = kafka.consumer({ groupId: "pulse-consumer-group" });
 async function handleMessage({ topic, partition, message }: EachMessagePayload): Promise<void> {
   if (!message.value) return;
 
-  const event: RawEvent = JSON.parse(message.value.toString());
-  console.log(
-    `[${topic}:${partition}] event=${event.eventName} project=${event.projectId} id=${event.id}`,
-  );
+  // 1. Parse and validate the raw message
+  const parsed = rawEventSchema.safeParse(JSON.parse(message.value.toString()));
+  if (!parsed.success) {
+    console.error("Invalid message, skipping:", parsed.error.flatten());
+    return;
+  }
+  const event = parsed.data;
+
+  // 2. Validate against EventSchema (if one exists)
+  const validation = await validateAgainstSchema(event);
+  if (!validation.valid) {
+    console.warn(`Event ${event.id} failed schema validation:`, validation.errors);
+    return;
+  }
+
+  // 3. Queue for batched PG insert
+  addEvent(event);
+
+  // 4. Update Redis counters
+  await updateCounters(event);
+
+  // 5. Publish SSE notification
+  await publishNewEvent(event);
 }
 
 export async function startConsumer(): Promise<void> {
