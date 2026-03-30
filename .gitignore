@@ -1,34 +1,109 @@
-# dependencies
+# ============================================================
+# Dependencies
+# ============================================================
 node_modules/
+.npm/
 
-# build outputs
-.next/
+# ============================================================
+# Build outputs
+# ============================================================
 dist/
+build/
+out/
+.next/
 .turbo/
+*.tsbuildinfo
 
-# env files
+# ============================================================
+# Environment & secrets
+# ============================================================
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# ============================================================
+# Logs
+# ============================================================
+*.log
+*.log.*
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# OS
-.DS_Store
-Thumbs.db
-
-# test
+# ============================================================
+# Test & coverage
+# ============================================================
 coverage/
+.nyc_output/
 playwright-report/
 test-results/
+blob-report/
+playwright/.cache/
 
-# prisma
+# ============================================================
+# Database
+# ============================================================
 apps/web/prisma/*.db
+apps/web/prisma/*.db-journal
+*.sqlite
+*.sqlite3
 
-# misc
-*.log
-npm-debug.log*
+# ============================================================
+# Docker
+# ============================================================
+.docker/
+
+# ============================================================
+# Terraform
+# ============================================================
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/*.tfstate.*.backup
+infra/terraform/.terraform.lock.hcl
+infra/terraform/terraform.tfvars
+infra/terraform/override.tf
+infra/terraform/override.tf.json
+
+# ============================================================
+# IDE & editors
+# ============================================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# ============================================================
+# OS
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============================================================
+# Misc
+# ============================================================
+.cache/
+tmp/
+temp/
+*.pid
+*.seed
+*.pid.lock
